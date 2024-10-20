@@ -1,0 +1,38 @@
+# Ignore target directories for Rust projects
+**/target/
+
+# Ignore node_modules directories for JavaScript/TypeScript projects
+**/node_modules/
+
+# Ignore Python bytecode files
+**/__pycache__/
+**/*.py[cod]
+
+# Ignore Java build directories
+**/build/
+**/out/
+**/*.class
+
+# Ignore .NET build directories
+**/bin/
+**/obj/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+desktop.ini
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+*.iml
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
