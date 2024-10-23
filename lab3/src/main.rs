@@ -5,6 +5,7 @@ use plotly::Plot;
 use plotly::Scatter;
 use std::f64::EPSILON;
 fn main() {
+    println!("Machine precision: {:e}", EPSILON);
     let num_points = 100;
     let x_min = 1e-300;
     let x_max = 1e+300;
@@ -12,21 +13,17 @@ fn main() {
     let x_values = generate_x_values(num_points, x_min, x_max);
     let delta_x_values = generate_delta_x_values(&x_values);
 
-    plot_results(&x_values, &delta_x_values, "Delta x vs x", "x", "delta x");
+    plot_results(&x_values, &delta_x_values, "f(x) = Δx", "x", "Δx");
 
     let relative_errors = generate_relative_errors(&x_values, &delta_x_values);
 
     plot_results(
         &x_values,
         &relative_errors,
-        "Relative error vs x",
+        "f(x) = δx",
         "x",
-        "Relative error",
+        "δx",
     );
-}
-
-fn get_machine_precision() -> f64 {
-    return EPSILON;
 }
 
 fn generate_x_values(num_points: usize, x_min: f64, x_max: f64) -> Vec<f64> {
@@ -80,6 +77,8 @@ fn plot_results(
 
     let layout = plotly::Layout::new()
         .title(plotly::common::Title::new(title))
+        .width(1000)  // Set the width of the plot
+        .height(600) // Set the height of the plot
         .x_axis(
             Axis::new()
                 .title(plotly::common::Title::new(x_label))
