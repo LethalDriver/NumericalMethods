@@ -60,12 +60,8 @@ fn process_and_plot(
     let mut data_series = Vec::new();
 
     for (approximation_method, method_name) in approximation_methods {
-        let mut relative_error_values = Vec::<f64>::with_capacity(h_values.len());
-        for h in h_values.iter() {
-            let numerical = approximation_method(f, x, *h);
-            let relative_error = calculate_relative_error(numerical, analytic(x));
-            relative_error_values.push(relative_error);
-        }
+        let relative_error_values =
+            generate_relative_error_values(x, h_values.clone(), f, analytic, approximation_method);
         data_series.push((
             h_values.clone(),
             relative_error_values,
@@ -74,6 +70,22 @@ fn process_and_plot(
     }
 
     plot_results(data_series, title, "h", "Relative error");
+}
+
+fn generate_relative_error_values(
+    x: f64,
+    h_values: Vec<f64>,
+    f: &dyn Fn(f64) -> f64,
+    analytic: &dyn Fn(f64) -> f64,
+    approximation_method: &dyn Fn(&dyn Fn(f64) -> f64, f64, f64) -> f64,
+) -> Vec<f64> {
+    let mut relative_error_values = Vec::<f64>::with_capacity(h_values.len());
+    for h in h_values.iter() {
+        let numerical = approximation_method(f, x, *h);
+        let relative_error = calculate_relative_error(numerical, analytic(x));
+        relative_error_values.push(relative_error);
+    }
+    relative_error_values
 }
 
 fn plot_results(
