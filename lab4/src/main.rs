@@ -26,7 +26,7 @@ fn main() {
         &analytic1,
         &first_order_approximation_methods,
         x,
-        "Relative errors of the derivative approximations for -0.1x^4 - 0.15x^3 - 0.5x^2 - 0.25x + 1.2",
+        "Derivative approximations of the polynomial function",
     );
     let f2 = |x: f64| (2.0 * x).sin().exp();
     let analytic2 = |x: f64| 2.0 * (2.0 * x).cos() * (2.0 * x).sin().exp();
@@ -35,7 +35,7 @@ fn main() {
         &analytic2,
         &first_order_approximation_methods,
         x,
-        "Relative error of the derivative approximation for e^sin(2x)",
+        "Derivative approximations of the exponential function",
     );
 
     let f3 = |x: f64| (x.cos()).ln();
@@ -45,7 +45,7 @@ fn main() {
         &analytic3,
         &second_order_approximation_methods,
         x,
-        "Relative error of the second-order central difference approximation for ln(cos(x))",
+        "2nd order derivative central difference approximation of the logarithmic function",
     );
 }
 
@@ -116,7 +116,9 @@ fn plot_results(
                 .title(plotly::common::Title::new(y_label))
                 .type_(plotly::layout::AxisType::Log)
                 .exponent_format("e"),
-        );
+        )
+        .width(1200)
+        .height(800);
 
     plot.set_layout(layout);
     plot.show();
