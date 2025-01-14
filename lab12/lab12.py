@@ -104,16 +104,16 @@ def system(t, y, m1, m2):
     return [vx1, vy1, vx2, vy2, ax1, ay1, ax2, ay2]
 
 if __name__ == "__main__":
-    for config in init_conds:
+    for condition in init_conds:
         y0 = [
-            config["x1"],
-            config["y1"],
-            config["x2"],
-            config["y2"],
-            config["vx1"],
-            config["vy1"],
-            config["vx2"],
-            config["vy2"],
+            condition["x1"],
+            condition["y1"],
+            condition["x2"],
+            condition["y2"],
+            condition["vx1"],
+            condition["vy1"],
+            condition["vx2"],
+            condition["vy2"],
         ]
         t_end = 10
         t_span = [0, 10]
@@ -123,14 +123,14 @@ if __name__ == "__main__":
             t_span,
             y0,
             t_eval=t_eval,
-            args=(config["m1"], config["m2"]),
+            args=(condition["m1"], condition["m2"]),
         )
         trajectory_1 = np.array([solution.y[0], solution.y[1]]).T
         trajectory_2 = np.array([solution.y[2], solution.y[3]]).T
         anim = render_particles(
             [trajectory_1, trajectory_2],
             solution.t,
-            config["name"],
+            condition["name"],
             "x(t)",
             "y(t)",
         )
