@@ -83,8 +83,7 @@ def render_particles(paths, t, title, xlabel, ylabel):
         fig, update, frames=len(t), init_func=init, blit=True, interval=50, repeat=True
     )
 
-    filename = title.replace(" ", "_").lower()
-    anim.save(f"{filename}.gif", writer="ffmpeg", fps=20)
+    anim.save(f"{title}.gif", writer="ffmpeg", fps=20)
 
     plt.show()
     return anim 
