@@ -3,51 +3,90 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import chi2
 from sklearn.metrics import mean_squared_error
+from scipy.stats import linregress
 
 x_data = np.array([0.75, 2, 3, 4, 6, 8, 8.5])
 y_data = np.array([1.2, 1.95, 2, 2.4, 2.5, 2.7, 2.6])
 
 
-def saturation_growth(x, alpha, beta):
-    return (alpha * x) / (beta + x)
 
 
-popt_sg, pcov_sg = curve_fit(saturation_growth, x_data, y_data)
-alpha_sg, beta_sg = popt_sg
+y_inv = 1 / y_data
+x_inv = 1 / x_data
+
+slope_sg_lin, intercept_sg_lin, _, _, _ = linregress(x_inv, y_inv)
+
+beta_over_alpha = slope_sg_lin
+one_over_alpha = intercept_sg_lin
+
+alpha_sg_lin = 1 / one_over_alpha
+beta_sg_lin = beta_over_alpha * alpha_sg_lin
 
 x_fit = np.linspace(min(x_data), max(x_data), 100)
-y_fit_sg = saturation_growth(x_fit, alpha_sg, beta_sg)
+y_fit_sg_lin = (alpha_sg_lin * x_fit) / (beta_sg_lin + x_fit)
 
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 2, 1)
+plt.plot(x_inv, y_inv, 'o', label='Transformed Data')
+plt.xlabel('1/x')
+plt.ylabel('1/y')
 
-plt.figure(figsize=(8, 5))
-plt.plot(x_data, y_data, "o", label="Data")
-plt.plot(x_fit, y_fit_sg, "-", label=f"Fitted: y = {alpha_sg:.2f}x/({beta_sg:.2f}+x)")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.title("Saturation Growth Rate Fit")
+x_fit_inv = np.linspace(min(x_inv), max(x_inv), 100)
+y_fit_inv_sg = intercept_sg_lin + slope_sg_lin * x_fit_inv
+plt.plot(x_fit_inv, y_fit_inv_sg, '-', label='Fitted Line')
+plt.title('Linearized Saturation Growth Rate')
 plt.legend()
 plt.grid(True)
+
+plt.subplot(1, 2, 2)
+plt.plot(x_data, y_data, 'o', label='Original Data')
+plt.plot(x_fit, y_fit_sg_lin, '-', label=f'Fitted: y = {alpha_sg_lin:.2f}x/({beta_sg_lin:.2f}+x)')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Original Saturation Growth Rate Model')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+
 plt.show()
 
+x_log = np.log10(x_data)
+y_log = np.log10(y_data)
 
-def power_equation(x, a, b):
-    return a * (x**b)
+slope_pow_lin, intercept_pow_lin, _, _, _ = linregress(x_log, y_log)
 
+b_pow_lin = slope_pow_lin
+log_a_pow_lin = intercept_pow_lin
 
-popt_pow, pcov_pow = curve_fit(power_equation, x_data, y_data)
-a_pow, b_pow = popt_pow
+a_pow_lin = 10**log_a_pow_lin
 
 x_fit = np.linspace(min(x_data), max(x_data), 100)
-y_fit_pow = power_equation(x_fit, a_pow, b_pow)
+y_fit_pow_lin = a_pow_lin * (x_fit**b_pow_lin)
 
-plt.figure(figsize=(8, 5))
-plt.plot(x_data, y_data, "o", label="Data")
-plt.plot(x_fit, y_fit_pow, "-", label=f"Fitted: y = {a_pow:.2f}x^{b_pow:.2f}")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.title("Power Equation Fit")
+
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 2, 1)
+plt.plot(x_log, y_log, 'o', label='Transformed Data')
+plt.xlabel('log(x)')
+plt.ylabel('log(y)')
+
+x_fit_log = np.linspace(min(x_log), max(x_log), 100)
+y_fit_log_pow = intercept_pow_lin + slope_pow_lin * x_fit_log
+plt.plot(x_fit_log, y_fit_log_pow, '-', label='Fitted Line')
+plt.title('Linearized Power Equation')
 plt.legend()
 plt.grid(True)
+
+plt.subplot(1, 2, 2)
+plt.plot(x_data, y_data, 'o', label='Original Data')
+plt.plot(x_fit, y_fit_pow_lin, '-', label=f'Fitted: y = {a_pow_lin:.2f}x^{b_pow_lin:.2f}')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Original Power Equation')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+
 plt.show()
 
 
@@ -64,6 +103,10 @@ y_ground_truth = 2 + 0.5 * x_ground_truth**2 + 0.1 * x_ground_truth**3
 np.random.seed(42)
 y_noise = np.random.normal(loc=0, scale=2, size=len(x_ground_truth))
 y_data_p2 = y_ground_truth + y_noise
+
+
+def calculate_sse(y_true, y_pred):
+    return np.sum((y_true - y_pred) ** 2)
 
 
 def calculate_aic_bic(y_true, y_pred, num_params):
@@ -101,9 +144,16 @@ for order in range(1, max_order + 1):
     y_pred = polynomial(x_ground_truth, *popt)
 
     aic, bic = calculate_aic_bic(y_data_p2, y_pred, order + 1)
-    results[order] = {"coeffs": popt, "y_pred": y_pred, "aic": aic, "bic": bic}
+    sse = calculate_sse(y_data_p2, y_pred)
+    results[order] = {
+        "coeffs": popt,
+        "y_pred": y_pred,
+        "aic": aic,
+        "bic": bic,
+        "sse": sse,
+    }
 
-    print(f"Order {order}: AIC={aic:.2f}, BIC={bic:.2f}")
+    print(f"Order {order}: AIC={aic:.2f}, BIC={bic:.2f}, SSE={sse:.2f}")
 
 print("\nLikelihood Ratio test:")
 for order in range(1, max_order):
@@ -152,7 +202,7 @@ for i, order in enumerate(results):
         results[order]["y_pred"],
         "-",
         label=f"Order {order}: AIC={results[order]['aic']:.2f}, BIC={results[order]['bic']:.2f}",
-        color=colors[i % len(colors)]  # Cycle through colors
+        color=colors[i % len(colors)],  # Cycle through colors
     )
 plt.xlabel("x")
 plt.ylabel("y")
